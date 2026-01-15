@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import Auctions from "./pages/Auctions";
+import UsersDealers from "./pages/UsersDealers";
 import DashboardLayout from "./components/common/DashboardLayout";
 
 function App() {
@@ -23,7 +24,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="auctions" element={<Auctions />} />
-          <Route path="users-dealers" element={<Dashboard />} />
+          <Route path="users-dealers" element={<UsersDealers />} />
           <Route path="payments-refunds" element={<Dashboard />} />
           <Route path="instant-offer" element={<Dashboard />} />
           <Route path="inspection-report" element={<Dashboard />} />
