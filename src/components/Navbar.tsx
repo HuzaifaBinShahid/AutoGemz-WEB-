@@ -3,6 +3,18 @@ import ThemeIcon from "./svgs/navbar/ThemeIcon";
 import NotificationIcon from "./svgs/navbar/NotificationIcon";
 
 const getPageTitle = (pathname: string): string => {
+  if (pathname.startsWith("/auctions/")) {
+    return "AUCTIONS > AUCTIONS DETAILS";
+  }
+  if (pathname.startsWith("/users-dealers/")) {
+    return "USERS & DEALERS > DETAILS";
+  }
+  if (pathname.startsWith("/payments-refunds/")) {
+    return "PAYMENTS & REFUNDS > DETAILS";
+  }
+  if (pathname.startsWith("/instant-offer/")) {
+    return "INSTANT OFFER > DETAILS";
+  }
   const titles: Record<string, string> = {
     "/dashboard": "DASHBOARD",
     "/auctions": "AUCTIONS",
@@ -22,7 +34,7 @@ const Navbar = () => {
 
   return (
     <div className="h-18 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-      <h1 className="text-[24px] font-bold text-gray-900">{pageTitle}</h1>
+      <h1 className="text-[24px] font-normal text-gray-900">{pageTitle}</h1>
 
       <div className="flex items-center gap-4">
         <button className="py-2 rounded-lg hover:bg-gray-200 transition-colors">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DataTable from "../components/common/DataTable";
 import Filter from "../components/svgs/auctions/Filter";
 
@@ -17,6 +18,7 @@ interface UserDealer {
 
 const UsersDealers = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const usersDealers: UserDealer[] = [
     {
@@ -157,7 +159,11 @@ const UsersDealers = () => {
 
         <div className="mb-4 border-b border-[#1F29371A]" />
 
-        <DataTable columns={columns} data={usersDealers} />
+        <DataTable
+          columns={columns}
+          data={usersDealers}
+          onRowClick={(row) => navigate(`/users-dealers/${row.id}`)}
+        />
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Filter from "../components/svgs/auctions/Filter";
 import DataTable from "../components/common/DataTable";
 
@@ -18,6 +19,7 @@ interface Auction {
 
 const Auctions = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const auctions: Auction[] = [
     {
@@ -201,6 +203,7 @@ const Auctions = () => {
             },
           ]}
           data={auctions}
+          onRowClick={(row) => navigate(`/auctions/${row.id}`)}
         />
       </div>
     </div>

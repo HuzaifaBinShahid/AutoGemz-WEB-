@@ -12,6 +12,7 @@ interface DataTableProps {
   imageType?: "box" | "rounded";
   imageKey?: string;
   imageAltKey?: string;
+  onRowClick?: (row: any) => void;
 }
 
 const DataTable = ({
@@ -20,6 +21,7 @@ const DataTable = ({
   imageType = "box",
   imageKey,
   imageAltKey,
+  onRowClick,
 }: DataTableProps) => {
   return (
     <div className="overflow-x-auto">
@@ -41,7 +43,10 @@ const DataTable = ({
           {data.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+              className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${
+                onRowClick ? "cursor-pointer" : ""
+              }`}
+              onClick={() => onRowClick && onRowClick(row)}
             >
               {columns.map((column) => {
                 if (column.render) {
