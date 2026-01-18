@@ -43,7 +43,19 @@ const Settings = () => {
           borderRadius: "0",
         }}
       >
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Settings</h2>
+        <h2
+          className="text-xl font-semibold text-gray-900 mb-6"
+          style={{
+            fontFamily: "'Chakra Petch', sans-serif",
+            fontWeight: 600,
+            fontSize: "24px",
+            lineHeight: "32px",
+            letterSpacing: "0.14em",
+            verticalAlign: "middle",
+          }}
+        >
+          Account Settings
+        </h2>
 
         <div className="flex flex-col items-center mb-8">
           <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden mb-4">

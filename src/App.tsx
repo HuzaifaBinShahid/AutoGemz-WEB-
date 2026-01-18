@@ -17,6 +17,7 @@ import PaymentRefundDetails from "./pages/PaymentRefundDetails";
 import InstantOffers from "./pages/InstantOffers";
 import InstantOfferDetails from "./pages/InstantOfferDetails";
 import InspectionReport from "./pages/InspectionReport";
+import InspectionReportDetails from "./pages/InspectionReportDetails";
 import DisputesCenter from "./pages/DisputesCenter";
 import Settings from "./pages/Settings";
 import AuctionDetails from "./pages/AuctionDetails";
@@ -41,6 +42,7 @@ function App() {
           <Route path="instant-offer" element={<InstantOffers />} />
           <Route path="instant-offer/:id" element={<InstantOfferDetails />} />
           <Route path="inspection-report" element={<InspectionReport />} />
+          <Route path="inspection-report/:id" element={<InspectionReportDetails />} />
           <Route path="disputes-center" element={<DisputesCenter />} />
           <Route path="settings" element={<Settings />} />
         </Route>

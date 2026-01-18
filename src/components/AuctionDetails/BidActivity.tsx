@@ -26,7 +26,17 @@ const BidActivity = ({ bids, timeRemaining }: BidActivityProps) => {
     >
       <div className="flex items-center gap-3 mb-4">
         <div className="w-1 h-6 bg-autogemz-orange"></div>
-        <h3 className="uppercase font-bold text-base leading-6 text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h3
+          className="uppercase font-bold text-base leading-6 text-black"
+          style={{
+            fontFamily: "'Chakra Petch', sans-serif",
+            fontWeight: 600,
+            fontSize: "24px",
+            lineHeight: "32px",
+            letterSpacing: "0.14em",
+            verticalAlign: "middle",
+          }}
+        >
           BID ACTIVITY
         </h3>
       </div>

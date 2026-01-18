@@ -128,7 +128,19 @@ const AuctionDetails = () => {
         }}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Auction Details</h2>
+          <h2
+            className="text-xl font-semibold text-gray-900 uppercase"
+            style={{
+              fontFamily: "'Chakra Petch', sans-serif",
+              fontWeight: 600,
+              fontSize: "24px",
+              lineHeight: "32px",
+              letterSpacing: "0.14em",
+              verticalAlign: "middle",
+            }}
+          >
+            Auction Details
+          </h2>
           <div className="flex gap-3">
             <button
               onClick={handleEditClick}
@@ -168,7 +180,15 @@ const AuctionDetails = () => {
 
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-3xl font-bold text-gray-900 uppercase">
+                <h3
+                  className="text-3xl font-bold text-gray-900 uppercase"
+                  style={{
+                    fontFamily: "'Chakra Petch', sans-serif",
+                    fontWeight: 600,
+                    letterSpacing: "0.14em",
+                    verticalAlign: "middle",
+                  }}
+                >
                   {auction.car.model}
                 </h3>
                 <p className="text-gray-500">{auction.auctionId}</p>
@@ -193,7 +213,17 @@ const AuctionDetails = () => {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center mb-2">
                 <div>
-                  <p className="text-lg font-semibold text-[#A5A5A5]">
+                  <p
+                    className="text-lg font-semibold text-[#A5A5A5] uppercase"
+                    style={{
+                      fontFamily: "'Chakra Petch', sans-serif",
+                      fontWeight: 600,
+                      fontSize: "24px",
+                      lineHeight: "32px",
+                      letterSpacing: "0.14em",
+                      verticalAlign: "middle",
+                    }}
+                  >
                     Seller
                   </p>
                   <p className="text-black text-[20px] font-semibold">{auction.seller}</p>
@@ -207,11 +237,31 @@ const AuctionDetails = () => {
               </div>
 
 
-              <p className="text-xl font-semibold text-black">
+              <p
+                className="text-xl font-semibold text-black uppercase"
+                style={{
+                  fontFamily: "'Chakra Petch', sans-serif",
+                  fontWeight: 600,
+                  fontSize: "24px",
+                  lineHeight: "32px",
+                  letterSpacing: "0.14em",
+                  verticalAlign: "middle",
+                }}
+              >
                 HIGHEST BID:   <span>{auction.highestBid}</span>
               </p>
 
-              <p className="text-xl font-semibold text-black">
+              <p
+                className="text-xl font-semibold text-black uppercase"
+                style={{
+                  fontFamily: "'Chakra Petch', sans-serif",
+                  fontWeight: 600,
+                  fontSize: "24px",
+                  lineHeight: "32px",
+                  letterSpacing: "0.14em",
+                  verticalAlign: "middle",
+                }}
+              >
                 ENDS IN: <span>{auction.endsIn}</span>
               </p>
 

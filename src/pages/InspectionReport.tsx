@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Filter from "../components/svgs/auctions/Filter";
 import DataTable from "../components/common/DataTable";
 
@@ -19,6 +20,7 @@ interface InspectionReport {
 
 const InspectionReport = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const inspectionReports: InspectionReport[] = [
     {
@@ -196,7 +198,11 @@ const InspectionReport = () => {
 
         <div className="mb-4 border-b border-[#1F29371A]" />
 
-        <DataTable columns={columns} data={inspectionReports} />
+        <DataTable
+          columns={columns}
+          data={inspectionReports}
+          onRowClick={(row) => navigate(`/inspection-report/${row.id}`)}
+        />
       </div>
     </div>
   );

@@ -37,7 +37,19 @@ const NotificationPreferences = () => {
         borderRadius: "0",
       }}
     >
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">Notification Preferences</h3>
+      <h3
+        className="text-xl font-semibold text-gray-900 mb-6"
+        style={{
+          fontFamily: "'Chakra Petch', sans-serif",
+          fontWeight: 600,
+          fontSize: "24px",
+          lineHeight: "32px",
+          letterSpacing: "0.14em",
+          verticalAlign: "middle",
+        }}
+      >
+        Notification Preferences
+      </h3>
 
       <div className="space-y-4">
         {notificationOptions.map((option) => (

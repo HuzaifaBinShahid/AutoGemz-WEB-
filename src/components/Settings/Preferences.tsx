@@ -41,7 +41,19 @@ const Preferences = () => {
         borderRadius: "0",
       }}
     >
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">Preferences</h3>
+      <h3
+        className="text-xl font-semibold text-gray-900 mb-6"
+        style={{
+          fontFamily: "'Chakra Petch', sans-serif",
+          fontWeight: 600,
+          fontSize: "24px",
+          lineHeight: "32px",
+          letterSpacing: "0.14em",
+          verticalAlign: "middle",
+        }}
+      >
+        Preferences
+      </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <SettingsDropdown
