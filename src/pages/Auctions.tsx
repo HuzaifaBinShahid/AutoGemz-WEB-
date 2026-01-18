@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Filter from "../components/svgs/auctions/Filter";
+import DataTable from "../components/common/DataTable";
 
 interface Auction {
   id: number;
@@ -17,6 +19,7 @@ interface Auction {
 
 const Auctions = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const auctions: Auction[] = [
     {
@@ -137,96 +140,71 @@ const Auctions = () => {
         </div>
 
         <div className="mb-4 border-b border-[#1F29371A]" />
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th
-                  className="text-left py-3 px-4 font-medium"
-                  style={{ color: "#1F293799" }}
+
+        <DataTable
+          columns={[
+            {
+              key: "car",
+              label: "CAR",
+              render: (value: Auction["car"]) => (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={value.image}
+                    alt={value.model}
+                    className="w-12 h-12 object-cover"
+                  />
+                  <div>
+                    <p className="font-medium text-gray-900">{value.model}</p>
+                    <p className="text-sm text-gray-500">{value.year}</p>
+                  </div>
+                </div>
+              ),
+            },
+            {
+              key: "seller",
+              label: "SELLER",
+              render: (value: string) => (
+                <span className="text-black">{value}</span>
+              ),
+            },
+            {
+              key: "createdAt",
+              label: "CREATED AT",
+            },
+            {
+              key: "status",
+              label: "STATUS",
+              render: (value: Auction["status"]) => (
+                <span
+                  className="inline-block px-3 py-1 rounded-full text-sm font-medium text-black"
+                  style={{ backgroundColor: getStatusColor(value) }}
                 >
-                  CAR
-                </th>
-                <th
-                  className="text-left py-3 px-4 font-medium"
-                  style={{ color: "#1F293799" }}
-                >
-                  SELLER
-                </th>
-                <th
-                  className="text-left py-3 px-4 font-medium"
-                  style={{ color: "#1F293799" }}
-                >
-                  CREATED AT
-                </th>
-                <th
-                  className="text-left py-3 px-4 font-medium"
-                  style={{ color: "#1F293799" }}
-                >
-                  STATUS
-                </th>
-                <th
-                  className="text-left py-3 px-4 font-medium"
-                  style={{ color: "#1F293799" }}
-                >
-                  HIGHEST BID
-                </th>
-                <th
-                  className="text-left py-3 px-4 font-medium"
-                  style={{ color: "#1F293799" }}
-                >
-                  ENDS IN
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {auctions.map((auction) => (
-                <tr
-                  key={auction.id}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={auction.car.image}
-                        alt={auction.car.model}
-                        className="w-12 h-12 object-cover"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {auction.car.model}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {auction.car.year}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-black">{auction.seller}</td>
-                  <td className="py-4 px-4 text-gray-700">
-                    {auction.createdAt}
-                  </td>
-                  <td className="py-4 px-4">
-                    <span
-                      className="inline-block px-3 py-1 rounded-full text-sm font-medium text-black"
-                      style={{
-                        backgroundColor: getStatusColor(auction.status),
-                      }}
-                    >
-                      {auction.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-gray-900 font-medium">
-                    {auction.highestBid || "—"}
-                  </td>
-                  <td className="py-4 px-4 text-[#1F2937] font-normal">
-                    {auction.endsIn || "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  {value}
+                </span>
+              ),
+            },
+            {
+              key: "highestBid",
+              label: "HIGHEST BID",
+              render: (value: string | null) => (
+                <span className="text-gray-900 font-medium">
+                  {value || "—"}
+                </span>
+              ),
+            },
+            {
+              key: "endsIn",
+              label: "ENDS IN",
+              render: (value: string | null) => (
+                <span className="text-[#1F2937] font-normal">
+                  {value || "—"}
+                </span>
+              ),
+            },
+          ]}
+          data={auctions}
+          onRowClick={(row) => navigate(`/auctions/${row.id}`)}
+        />
       </div>
     </div>
   );
