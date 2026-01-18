@@ -11,10 +11,22 @@ const AccountSecurity = () => {
         borderRadius: "0",
       }}
     >
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">Account Security</h3>
+      <h3
+        className="text-xl font-semibold text-gray-900 mb-6"
+        style={{
+          fontFamily: "'Chakra Petch', sans-serif",
+          fontWeight: 600,
+          fontSize: "24px",
+          lineHeight: "32px",
+          letterSpacing: "0.14em",
+          verticalAlign: "middle",
+        }}
+      >
+        Account Security
+      </h3>
 
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-[70%]">
           <div className="flex-1">
             <label
               className="block mb-2 text-base leading-6 text-[#111111]"
@@ -46,17 +58,8 @@ const AccountSecurity = () => {
           </button>
         </div>
 
-        <div className="flex items-center justify-between">
-          <label
-            className="text-base leading-6 text-[#111111]"
-            style={{
-              fontFamily: "'Mulish', sans-serif",
-              fontWeight: 300,
-            }}
-          >
-            Two-Factor Authentication
-          </label>
-          <button
+        <div className="flex items-center gap-6">
+        <button
             onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
             className={`relative w-14 h-8 rounded-full transition-colors ${
               twoFactorEnabled ? "bg-autogemz-orange" : "bg-gray-300"
@@ -68,6 +71,16 @@ const AccountSecurity = () => {
               }`}
             />
           </button>
+          <label
+            className="text-base leading-6 text-[#111111]"
+            style={{
+              fontFamily: "'Mulish', sans-serif",
+              fontWeight: 300,
+            }}
+          >
+            Two-Factor Authentication
+          </label>
+         
         </div>
       </div>
     </div>

@@ -22,15 +22,15 @@ const Dashboard = () => {
         </div>
 
         <div className="flex">
-          <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm text-gray-700">
+          <button className="px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm text-gray-700">
             <RefreshDataIcon />
             <span className="text-[#1F2937]">Refresh Data</span>
           </button>
-          <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm text-gray-700">
+          <button className="px-3 py-2  rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm text-gray-700">
             <ShareIcon />
             <span className="text-[#1F2937]">Share Icon</span>
           </button>
-          <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          <button className="p-2  rounded-lg hover:bg-gray-50 transition-colors">
             <ThreeDotsIcon />
           </button>
         </div>
