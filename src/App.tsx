@@ -22,6 +22,9 @@ import DisputesCenter from "./pages/DisputesCenter";
 import Settings from "./pages/Settings";
 import AuctionDetails from "./pages/AuctionDetails";
 import DashboardLayout from "./components/common/DashboardLayout";
+import InspectorLayout from "./components/common/InspectorLayout";
+import InspectorInspectionList from "./pages/InspectorInspectionList";
+import AddNewCar from "./pages/AddNewCar";
 
 function App() {
   return (
@@ -44,6 +47,12 @@ function App() {
           <Route path="inspection-report" element={<InspectionReport />} />
           <Route path="inspection-report/:id" element={<InspectionReportDetails />} />
           <Route path="disputes-center" element={<DisputesCenter />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        <Route path="/inspector" element={<InspectorLayout />}>
+          <Route index element={<InspectorInspectionList />} />
+          <Route path="add" element={<AddNewCar />} />
+          <Route path=":id" element={<InspectionReportDetails />} />
           <Route path="settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

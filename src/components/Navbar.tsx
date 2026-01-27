@@ -3,6 +3,18 @@ import ThemeIcon from "./svgs/navbar/ThemeIcon";
 import NotificationIcon from "./svgs/navbar/NotificationIcon";
 
 const getPageTitle = (pathname: string): string => {
+  if (pathname.startsWith("/inspector/settings")) {
+    return "SETTINGS";
+  }
+  if (pathname === "/inspector/add") {
+    return "ADD NEW CAR";
+  }
+  if (pathname.match(/^\/inspector\/\d+/)) {
+    return "INSPECTION LIST > DETAILS";
+  }
+  if (pathname.startsWith("/inspector")) {
+    return "INSPECTION LIST";
+  }
   if (pathname.startsWith("/auctions/")) {
     return "AUCTIONS > AUCTIONS DETAILS";
   }
