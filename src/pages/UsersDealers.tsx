@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import DataTable from "../components/common/DataTable";
 import Filter from "../components/svgs/auctions/Filter";
+import { userService } from "../services/userService";
+import StatusModal from "../components/common/StatusModal";
 
 interface UserDealer {
-  id: number;
+  id: string;
   profile: {
     image: string;
     name: string;
@@ -14,50 +18,101 @@ interface UserDealer {
   phone: string;
   kycStatus: "VERIFIED" | "PENDING KYC" | "REJECTED";
   joinedOn: string;
+  isActive: boolean;
 }
 
 const UsersDealers = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const page = 1;
+  const limit = 10;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const usersDealers: UserDealer[] = [
-    {
-      id: 1,
-      profile: {
-        image: "https://ui-avatars.com/api/?name=Alex&background=random",
-        name: "Alex",
-      },
-      role: "DEALER",
-      email: "ali.motors@e...",
-      phone: "03xx xxxxxxx",
-      kycStatus: "VERIFIED",
-      joinedOn: "12 Nov",
+  const [statusModalConfig, setStatusModalConfig] = useState<{
+    isOpen: boolean;
+    userId: string | null;
+    userName: string;
+    action: "BLACKLIST" | "RESTORE";
+  }>({
+    isOpen: false,
+    userId: null,
+    userName: "",
+    action: "BLACKLIST",
+  });
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['users', page, limit],
+    queryFn: () => userService.getUsers({ page, limit, sortBy: 'createdAt:desc' }),
+  });
+
+  const blacklistMutation = useMutation({
+    mutationFn: (userId: string) => userService.blacklistUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success("User blacklisted successfully");
+      handleCloseModal();
     },
-    {
-      id: 2,
-      profile: {
-        image: "https://ui-avatars.com/api/?name=Sara+Khan&background=random",
-        name: "Sara Khan",
-      },
-      role: "BUYER",
-      email: "sara.khan@e...",
-      phone: "03xx xxxxxxx",
-      kycStatus: "PENDING KYC",
-      joinedOn: "10 Nov",
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to blacklist user");
     },
-    {
-      id: 3,
-      profile: {
-        image: "https://ui-avatars.com/api/?name=AutoHub&background=random",
-        name: "AutoHub",
-      },
-      role: "BUYER",
-      email: "autohub@e...",
-      phone: "03xx xxxxxxx",
-      kycStatus: "REJECTED",
-      joinedOn: "08 Nov",
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: (userId: string) => userService.restoreUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success("User restored successfully");
+      handleCloseModal();
     },
-  ];
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to restore user");
+    },
+  });
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>, row: UserDealer) => {
+    e.stopPropagation();
+    const newValue = e.target.value === "active";
+    if (newValue === row.isActive) return;
+
+    setStatusModalConfig({
+      isOpen: true,
+      userId: row.id,
+      userName: row.profile.name,
+      action: newValue ? "RESTORE" : "BLACKLIST",
+    });
+  };
+
+  const handleCloseModal = () => {
+    setStatusModalConfig(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleConfirmStatusChange = () => {
+    if (!statusModalConfig.userId) return;
+
+    if (statusModalConfig.action === "BLACKLIST") {
+      blacklistMutation.mutate(statusModalConfig.userId);
+    } else {
+      restoreMutation.mutate(statusModalConfig.userId);
+    }
+  };
+
+  const formatUserData = (users: any[]): UserDealer[] => {
+    return users.map((user) => ({
+      id: user.id,
+      profile: {
+        image: user.avatar || `https://ui-avatars.com/api/?name=${user.fullName}&background=random`,
+        name: user.fullName,
+      },
+      role: user.role === 'dealer' ? 'DEALER' : 'BUYER',
+      email: user.email,
+      phone: user.phone || '03xx xxxxxxx',
+      kycStatus: user.isEmailVerified ? 'VERIFIED' : 'PENDING KYC',
+      joinedOn: new Date(user.lastLogin || new Date()).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+      isActive: user.isActive !== false, // Default to true if not specified
+    }));
+  };
+
+  const usersDealers: UserDealer[] = data?.results ? formatUserData(data.results) : [];
 
   const getKycStatusColor = (status: UserDealer["kycStatus"]) => {
     switch (status) {
@@ -108,10 +163,6 @@ const UsersDealers = () => {
       label: "EMAIL",
     },
     {
-      key: "phone",
-      label: "PHONE",
-    },
-    {
       key: "kycStatus",
       label: "KYC STATUS",
       render: (value: UserDealer["kycStatus"]) => (
@@ -121,6 +172,25 @@ const UsersDealers = () => {
         >
           {value}
         </span>
+      ),
+    },
+    {
+      key: "isActive",
+      label: "STATUS",
+      render: (_: boolean, row: UserDealer) => (
+        <select
+          value={row.isActive ? "active" : "inactive"}
+          onChange={(e) => handleStatusChange(e, row)}
+          onClick={(e) => e.stopPropagation()}
+          className={`px-2 py-1 rounded border text-sm font-medium focus:outline-none focus:ring-1 focus:ring-autogemz-orange transition-colors ${
+            row.isActive 
+              ? "text-[#3EB549] border-[#3EB5491A] bg-[#3EB5490D]" 
+              : "text-[#DC3729] border-[#DC37291A] bg-[#DC37290D]"
+          }`}
+        >
+          <option value="active" className="text-[#3EB549] bg-white">Active</option>
+          <option value="inactive" className="text-[#DC3729] bg-white">Inactive</option>
+        </select>
       ),
     },
     {
@@ -159,12 +229,47 @@ const UsersDealers = () => {
 
         <div className="mb-4 border-b border-[#1F29371A]" />
 
-        <DataTable
-          columns={columns}
-          data={usersDealers}
-          onRowClick={(row) => navigate(`/users-dealers/${row.id}`)}
-        />
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="flex items-center gap-4 p-4 border-b border-gray-100 animate-pulse">
+                <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded w-20"></div>
+                <div className="h-4 bg-gray-200 rounded w-24"></div>
+              </div>
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">❌ Error loading users. Please try again.</p>
+          </div>
+        ) : usersDealers.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-6xl mb-4">📭</p>
+            <p className="text-gray-500 text-lg">No users found</p>
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={usersDealers}
+            onRowClick={(row) => navigate(`/users-dealers/${row.id}`)}
+          />
+        )}
       </div>
+
+      <StatusModal
+        isOpen={statusModalConfig.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmStatusChange}
+        title={statusModalConfig.action === "BLACKLIST" ? "BLACKLIST USER?" : "RESTORE USER?"}
+        message={`Are you sure you want to ${statusModalConfig.action.toLowerCase()} ${statusModalConfig.userName}?`}
+        confirmText={statusModalConfig.action}
+        type={statusModalConfig.action === "BLACKLIST" ? "danger" : "success"}
+      />
     </div>
   );
 };

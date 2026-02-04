@@ -17,6 +17,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
+  { path: '/my-vehicles', label: 'My Vehicles', icon: AuctionsIcon },
   { path: '/auctions', label: 'Auctions', icon: AuctionsIcon },
   { path: '/users-dealers', label: 'Users & Dealers', icon: UsersDealersIcons },
   { path: '/payments-refunds', label: 'Payments & Refunds', icon: PaymentsIcon },

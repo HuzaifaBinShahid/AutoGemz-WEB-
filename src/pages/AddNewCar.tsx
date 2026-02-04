@@ -6,69 +6,17 @@ import ExteriorDesign from "../components/svgs/ExteriorDesign";
 import AddIssueModal from "../components/common/AddIssueModal";
 import MarkAreaModal from "../components/common/MarkAreaModal";
 import AddNewCarDetailsContent from "../components/AddNewCar/DetailsStepAccordion";
+import { inspectionService } from "../services/inspectionService";
+import type { CreateInspectionPayload } from "../services/inspectionService";
+import { toast } from "react-hot-toast";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-const steps = ["Info", "Details", "Pictures", "Submit"];
-const emptyOpts: { value: string; label: string }[] = [];
+const steps = ["Info", "Details", "Submit"];
 
-const COMMENT_PLACEHOLDER = "Describe Your car: Example: Alloy rim, first owner, genuine parts, maintained by authorized workshop, excellent mileage, original paint etc.";
-
-function SubmitStepTextArea({
-  name,
-  label,
-  placeholder,
-  maxLength = 1000,
-}: {
-  name: string;
-  label: string;
-  placeholder: string;
-  maxLength?: number;
-}) {
-  const [value, setValue] = useState("");
-  const remaining = maxLength - value.length;
-  return (
-    <div className="w-full">
-      <div className="mb-2 flex items-center justify-between">
-        <label
-          className="text-base leading-6 text-[#111111]"
-          style={{ fontFamily: "'Mulish', sans-serif", fontWeight: 300 }}
-        >
-          {label}
-        </label>
-        <div className="flex items-center gap-2">
-          <span className="text-sm" style={{ color: "#1F293799" }}>
-            Remaining Characters {remaining}
-          </span>
-          <button
-            type="button"
-            onClick={() => setValue("")}
-            className="text-sm font-medium"
-            style={{ color: "#DC3729" }}
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-      <textarea
-        name={name}
-        value={value}
-        onChange={(e) => setValue(e.target.value.slice(0, maxLength))}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        rows={6}
-        className="w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-autogemz-orange"
-        style={{
-          backgroundColor: "#0000000D",
-          backdropFilter: "blur(5px)",
-          border: "none",
-          fontFamily: "'Mulish', sans-serif",
-          color: "#00000096",
-          resize: "vertical",
-        }}
-      />
-      <style>{`textarea[name="${name}"]::placeholder { color: #00000096 !important; }`}</style>
-    </div>
-  );
-}
+const yesNoOptions = [
+  { value: "true", label: "Yes" },
+  { value: "false", label: "No" },
+];
 
 const AddNewCar = () => {
   const navigate = useNavigate();
@@ -76,6 +24,166 @@ const AddNewCar = () => {
   const [isAddIssueOpen, setIsAddIssueOpen] = useState(false);
   const [isMarkAreaOpen, setIsMarkAreaOpen] = useState(false);
   const [isSubmitSuccessOpen, setIsSubmitSuccessOpen] = useState(false);
+
+  const [formData, setFormData] = useState<CreateInspectionPayload>({
+    basicInformation: {
+      model: "",
+      city: "",
+      images: [],
+    },
+    carSpecification: {
+      inspectionDate: new Date().toISOString(),
+      engineType: "",
+      mileage: 0,
+      engineNumber: "",
+      registrationNumber: "",
+      cngInstall: false,
+      engineCapacity: "",
+      chassisNumber: "",
+      transmissionType: "",
+      registeredCity: "",
+      driveType: "",
+      registeredYear: 0,
+    },
+    exteriorCondition: [],
+    acHeater: {
+      acFitted: true,
+      heating: true,
+      cooling: true,
+      blower: true,
+      acOptional: "",
+    },
+    brake: {
+      frontRightDisc: "",
+      frontRightDiscImage: "",
+      frontLeftDisc: "",
+      frontLeftDiscImage: "",
+      frontRightBrakePad: "",
+      frontRightBrakePadImage: "",
+      frontLeftBrakePad: "",
+      frontLeftBrakePadImage: "",
+    },
+    electricalElectronics: {
+      computerCheckup: true,
+      rearViewCamera: true,
+      batteringWarningLight: true,
+      oilPressureLowWarningLight: true,
+      temperatureWarningLight: true,
+      gauges: true,
+      airBagWarningLight: true,
+      powerSteeringWarningLight: true,
+      absWarningLight: true,
+      keyFobBatteryLowLight: true,
+      voltage: "",
+      terminalCondition: "",
+      charging: true,
+      alternatorOperation: true,
+    },
+    status: "pending",
+  });
+
+  const mutation = useMutation({
+    mutationFn: (payload: CreateInspectionPayload) => 
+      inspectionService.createInspectionSheet(payload),
+    onSuccess: () => {
+      setIsSubmitSuccessOpen(true);
+      toast.success("Inspection sheet created successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to create inspection sheet");
+    },
+  });
+
+  const handleInputChange = (section: keyof CreateInspectionPayload, field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [section]: {
+        ...(prev[section] as object),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleAddIssue = (data: { name: string; markArea: string; issue: string; images: File[] }) => {
+    const imageUrls = data.images.map(f => URL.createObjectURL(f));
+    const newIssue = {
+      name: data.name,
+      markArea: data.markArea,
+      selectIssue: data.issue,
+      images: imageUrls,
+    };
+    setFormData(prev => ({
+      ...prev,
+      exteriorCondition: [...prev.exteriorCondition, newIssue]
+    }));
+  };
+
+  const validateStep = (step: number) => {
+    if (step === 0) {
+      const { basicInformation, carSpecification } = formData;
+      if (!basicInformation.model) {
+        toast.error("Please enter the vehicle model");
+        return false;
+      }
+      if (!basicInformation.city) {
+        toast.error("Please enter the city");
+        return false;
+      }
+      const requiredSpecFields = [
+        { key: "engineType", label: "Engine Type" },
+        { key: "engineNumber", label: "Engine Number" },
+        { key: "registrationNumber", label: "Registration Number" },
+        { key: "engineCapacity", label: "Engine Capacity" },
+        { key: "chassisNumber", label: "Chassis Number" },
+        { key: "transmissionType", label: "Transmission Type" },
+        { key: "registeredCity", label: "Registered City" },
+        { key: "driveType", label: "Drive Type" },
+      ];
+
+      for (const field of requiredSpecFields) {
+        if (!(carSpecification as any)[field.key]) {
+          toast.error(`Please fill the ${field.label}`);
+          return false;
+        }
+      }
+
+      if (carSpecification.mileage <= 0) {
+        toast.error("Please enter a valid mileage");
+        return false;
+      }
+    }
+
+    if (step === 1) {
+      const { acHeater, electricalElectronics } = formData;
+      if (!acHeater.acOptional) {
+        toast.error("Please specify AC Operational status");
+        return false;
+      }
+      if (!electricalElectronics.voltage) {
+        toast.error("Please enter Battery Voltage");
+        return false;
+      }
+    }
+
+    if (step === 2) {
+      // Step 2 is now Submit, no specific validation beyond prior steps
+      return true;
+    }
+
+    return true;
+  };
+
+  const handleNextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (validateStep(2)) {
+      mutation.mutate(formData);
+    }
+  };
   return (
     <div className="p-6 bg-[#F2F2F2] min-h-screen">
       <div
@@ -105,7 +213,7 @@ const AddNewCar = () => {
             Add New CAR FOR INSPECTION
           </div>
           <div className="mb-4 flex gap-1">
-            {[0, 1, 2, 3].map((i) => (
+            {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 className="h-2 flex-1"
@@ -121,7 +229,11 @@ const AddNewCar = () => {
               <button
                 key={step}
                 type="button"
-                onClick={() => setCurrentStep(i)}
+                onClick={() => {
+                  if (i <= currentStep || validateStep(currentStep)) {
+                    setCurrentStep(i);
+                  }
+                }}
                 className="flex items-center gap-2 text-sm font-medium uppercase transition-colors"
                 style={{ color: "#1F2937", fontFamily: "'Mulish', sans-serif" }}
               >
@@ -135,39 +247,55 @@ const AddNewCar = () => {
         {currentStep === 0 && (
         <>
         <section className="mb-10">
-          <h2
-            className="uppercase mb-4"
-            style={{
-              fontFamily: "'Chakra Petch', sans-serif",
-              fontWeight: 600,
-              fontSize: "18px",
-              lineHeight: "28px",
-              letterSpacing: "0.14em",
-              color: "#111111",
-            }}
-          >
-            BASIC INFORMATION
-          </h2>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-10 w-1" style={{ backgroundColor: "#DC3729" }} />
+            <h2
+              className="uppercase"
+              style={{
+                fontFamily: "'Chakra Petch', sans-serif",
+                fontWeight: 600,
+                fontSize: "18px",
+                lineHeight: "28px",
+                letterSpacing: "0.14em",
+                color: "#111111",
+              }}
+            >
+              BASIC INFORMATION
+            </h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <SettingsDropdown
+            <SettingsInput
               label="Model"
               required
-              placeholder="SELECT MODEL"
-              options={emptyOpts}
+              placeholder="ENTER MODEL"
               name="model"
+              value={formData.basicInformation.model}
+              onChange={(e) => handleInputChange("basicInformation", "model", e.target.value)}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="City"
               required
-              placeholder="SELECT CITY"
-              options={emptyOpts}
+              placeholder="ENTER CITY"
               name="city"
+              value={formData.basicInformation.city}
+              onChange={(e) => handleInputChange("basicInformation", "city", e.target.value)}
             />
           </div>
           <div
-            className="border-2 border-dashed border-gray-300 flex flex-col items-center justify-center py-12 px-6"
+            className="border-2 border-dashed border-gray-300 flex flex-col items-center justify-center py-12 px-6 relative"
             style={{ borderRadius: "0" }}
           >
+            <input 
+              type="file" 
+              multiple 
+              className="hidden" 
+              id="basic-info-images" 
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                const urls = files.map(f => URL.createObjectURL(f));
+                handleInputChange("basicInformation", "images", [...formData.basicInformation.images, ...urls]);
+              }}
+            />
             <svg
               width="48"
               height="48"
@@ -185,6 +313,7 @@ const AddNewCar = () => {
               />
             </svg>
             <button
+              onClick={() => document.getElementById("basic-info-images")?.click()}
               className="px-6 py-2 text-sm font-semibold text-white uppercase mb-2"
               style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
             >
@@ -193,105 +322,132 @@ const AddNewCar = () => {
             <p className="text-sm" style={{ color: "#00000096" }}>
               Max limit 5 MB per image.
             </p>
+            {formData.basicInformation.images.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {formData.basicInformation.images.map((img, i) => (
+                  <img key={i} src={img} alt="" className="h-20 w-20 object-cover" />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
         <section className="mb-10">
-          <h2
-            className="uppercase mb-4"
-            style={{
-              fontFamily: "'Chakra Petch', sans-serif",
-              fontWeight: 600,
-              fontSize: "18px",
-              lineHeight: "28px",
-              letterSpacing: "0.14em",
-              color: "#111111",
-            }}
-          >
-            CAR SPECIFICATION
-          </h2>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-10 w-1" style={{ backgroundColor: "#DC3729" }} />
+            <h2
+              className="uppercase"
+              style={{
+                fontFamily: "'Chakra Petch', sans-serif",
+                fontWeight: 600,
+                fontSize: "18px",
+                lineHeight: "28px",
+                letterSpacing: "0.14em",
+                color: "#111111",
+              }}
+            >
+              CAR SPECIFICATION
+            </h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SettingsDropdown
+            <SettingsInput
               label="Inspection Date"
               required
-              placeholder="SELECT DATE"
-              options={emptyOpts}
+              type="date"
               name="inspectionDate"
+              value={formData.carSpecification.inspectionDate.split('T')[0]}
+              onChange={(e) => handleInputChange("carSpecification", "inspectionDate", new Date(e.target.value).toISOString())}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Engine Type"
               required
-              placeholder="SELECT TYPE"
-              options={emptyOpts}
+              placeholder="ENTER TYPE"
               name="engineType"
+              value={formData.carSpecification.engineType}
+              onChange={(e) => handleInputChange("carSpecification", "engineType", e.target.value)}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Mileage"
               required
-              placeholder="SELECT"
-              options={emptyOpts}
+              type="number"
+              placeholder="ENTER MILEAGE"
               name="mileage"
+              value={formData.carSpecification.mileage}
+              onChange={(e) => handleInputChange("carSpecification", "mileage", Number(e.target.value))}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Engine No"
               required
-              placeholder="SELECT"
-              options={emptyOpts}
+              placeholder="ENTER ENGINE NO"
               name="engineNo"
+              value={formData.carSpecification.engineNumber}
+              onChange={(e) => handleInputChange("carSpecification", "engineNumber", e.target.value)}
             />
             <SettingsInput
               label="Registration No"
               required
               placeholder="ENTER"
               name="registrationNo"
+              value={formData.carSpecification.registrationNumber}
+              onChange={(e) => handleInputChange("carSpecification", "registrationNumber", e.target.value)}
             />
             <SettingsDropdown
               label="CNG Install"
               required
               placeholder="SELECT"
-              options={emptyOpts}
+              options={yesNoOptions}
               name="cngInstall"
+              value={formData.carSpecification.cngInstall ? "true" : "false"}
+              onChange={(e) => handleInputChange("carSpecification", "cngInstall", e.target.value === "true")}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Engine Capacity"
               required
-              placeholder="SELECT DATE"
-              options={emptyOpts}
+              placeholder="ENTER CAPACITY"
               name="engineCapacity"
+              value={formData.carSpecification.engineCapacity}
+              onChange={(e) => handleInputChange("carSpecification", "engineCapacity", e.target.value)}
             />
             <SettingsInput
               label="Chassis No"
               required
-              placeholder="ENTER"
+              placeholder="ENTER CHASSIS NO"
               name="chassisNo"
+              value={formData.carSpecification.chassisNumber}
+              onChange={(e) => handleInputChange("carSpecification", "chassisNumber", e.target.value)}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Transmission Type"
               required
-              placeholder="SELECT DATE"
-              options={emptyOpts}
+              placeholder="ENTER TRANSMISSION"
               name="transmissionType"
+              value={formData.carSpecification.transmissionType}
+              onChange={(e) => handleInputChange("carSpecification", "transmissionType", e.target.value)}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Registered City"
               required
-              placeholder="SELECT CITY"
-              options={emptyOpts}
+              placeholder="ENTER CITY"
               name="registeredCity"
+              value={formData.carSpecification.registeredCity}
+              onChange={(e) => handleInputChange("carSpecification", "registeredCity", e.target.value)}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Drive Type"
               required
-              placeholder="SELECT TYPE"
-              options={emptyOpts}
+              placeholder="ENTER DRIVE TYPE"
               name="driveType"
+              value={formData.carSpecification.driveType}
+              onChange={(e) => handleInputChange("carSpecification", "driveType", e.target.value)}
             />
-            <SettingsDropdown
+            <SettingsInput
               label="Registered Year"
               required
-              placeholder="SELECT YEAR"
-              options={emptyOpts}
+              type="number"
+              placeholder="ENTER YEAR"
               name="registeredYear"
+              value={formData.carSpecification.registeredYear}
+              onChange={(e) => handleInputChange("carSpecification", "registeredYear", Number(e.target.value))}
             />
           </div>
         </section>
@@ -316,82 +472,40 @@ const AddNewCar = () => {
               className="px-4 py-2 text-sm font-semibold text-white uppercase shrink-0"
               style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
             >
-              ADD NEW
+              + ADD ISSUE
             </button>
-          </div>
-          <div className="flex items-center gap-2 mb-6" style={{ color: "#DC3729" }}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="text-sm" style={{ fontFamily: "'Mulish', sans-serif", color: "#111111" }}>
-              Select or add a point to the car layout to add images of issues in the car.
-            </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex flex-col">
-              <div className="relative">
-                <img
-                  src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400"
-                  alt="Car roof"
-                  className="w-full h-auto object-cover"
-                  style={{ borderRadius: "0" }}
-                />
-                <button
-                  className="absolute top-2 right-2 px-3 py-1 text-xs font-semibold text-white uppercase"
-                  style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
-                >
-                  EDIT
-                </button>
-              </div>
-              <p className="mt-2 text-base font-medium text-black uppercase">
-                02 CAR ROOF
-              </p>
-              <div className="grid grid-cols-2 gap-3 mt-6">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>P</span>
-                  <span className="text-sm font-medium text-black uppercase">PAINT MARKED</span>
+              {formData.exteriorCondition.length > 0 ? (
+                <div className="space-y-6">
+                  {formData.exteriorCondition.map((condition, idx) => (
+                    <div key={idx} className="border p-4 bg-gray-50">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold uppercase">{condition.name} - {condition.markArea}</span>
+                        <button 
+                          onClick={() => {
+                            const newConds = [...formData.exteriorCondition];
+                            newConds.splice(idx, 1);
+                            handleInputChange("exteriorCondition" as any, "", newConds);
+                          }}
+                          className="text-red-500 text-sm hover:underline"
+                        >
+                          REMOVE
+                        </button>
+                      </div>
+                      <div className="text-sm text-gray-600 mb-2">{condition.selectIssue}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {condition.images.map((img, i) => (
+                          <img key={i} src={img} alt="" className="h-16 w-16 object-cover" />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>D</span>
-                  <span className="text-sm font-medium text-black uppercase">DENT</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>B2</span>
-                  <span className="text-sm font-medium text-black uppercase">BIG SCRATCH</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>D1</span>
-                  <span className="text-sm font-medium text-black uppercase">SMALL DENT</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>S1</span>
-                  <span className="text-sm font-medium text-black uppercase">SMALL SCRATCH</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>D2</span>
-                  <span className="text-sm font-medium text-black uppercase">DENT WITH SCRATCH (SIZE LIKE FLAT OF THE HAND)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>S</span>
-                  <span className="text-sm font-medium text-black uppercase">SCRATCH</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm font-medium text-white shrink-0" style={{ backgroundColor: "#DC3729", borderRadius: "0" }}>D3</span>
-                  <span className="text-sm font-medium text-black uppercase">SMALL DENT WITH SCRATCH (SIZE LIKE A THUMB)</span>
-                </div>
-              </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic">No exterior issues added yet.</p>
+              )}
             </div>
             <div
               className="flex cursor-pointer flex-col"
@@ -408,141 +522,34 @@ const AddNewCar = () => {
         )}
 
         {currentStep === 1 && (
-          <AddNewCarDetailsContent />
+          <AddNewCarDetailsContent formData={formData} onChange={handleInputChange} />
         )}
 
         {currentStep === 2 && (
-          <section className="mb-10">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="h-12 w-1 shrink-0" style={{ backgroundColor: "#DC3729" }} />
-              <h2
-                className="uppercase"
-                style={{
-                  fontFamily: "'Chakra Petch', sans-serif",
-                  fontWeight: 600,
-                  fontSize: "18px",
-                  lineHeight: "28px",
-                  letterSpacing: "0.14em",
-                  color: "#111111",
-                }}
-              >
-                ADD MORE PICTURES
-              </h2>
-            </div>
+          <section className="mb-10 text-center">
             <div
-              className="relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 py-16"
-              style={{ borderRadius: "0" }}
+              className="mb-6 flex h-16 w-16 mx-auto items-center justify-center rounded-full bg-autogemz-orange"
             >
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="absolute right-8 top-8 opacity-60"
-                style={{ color: "#DC3729" }}
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="2" />
-                <path d="M21 15L16 10L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M20 6L9 17L4 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <button
-                type="button"
-                className="mb-2 px-6 py-2 text-sm font-semibold uppercase text-white"
-                style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
-              >
-                + ADD PHOTOS
-              </button>
-              <p className="text-sm" style={{ color: "#1F293799" }}>
-                (Max limit 5 MB per image)
-              </p>
             </div>
-            <ul className="mt-6 space-y-3">
-              <li className="flex items-start gap-3">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="mt-0.5 shrink-0">
-                  <circle cx="10" cy="10" r="9" fill="#3EB549" />
-                  <path d="M6 10L9 13L14 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-sm" style={{ fontFamily: "'Mulish', sans-serif", color: "#111111" }}>
-                  Adding at least 8 pictures improves the chances for a quick sale.
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="mt-0.5 shrink-0">
-                  <circle cx="10" cy="10" r="9" fill="#3EB549" />
-                  <path d="M6 10L9 13L14 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-sm" style={{ fontFamily: "'Mulish', sans-serif", color: "#111111" }}>
-                  Photos should be in &apos;jpeg, jpg, png, gif&apos; format only.
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="mt-0.5 shrink-0">
-                  <circle cx="10" cy="10" r="9" fill="#3EB549" />
-                  <path d="M6 10L9 13L14 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-sm" style={{ fontFamily: "'Mulish', sans-serif", color: "#111111" }}>
-                  Adding clear Front, Back and Interior pictures of your car increases the quality of your Ad and gets you noticed more.
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="mt-0.5 shrink-0">
-                  <circle cx="10" cy="10" r="9" fill="#3EB549" />
-                  <path d="M6 10L9 13L14 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-sm" style={{ fontFamily: "'Mulish', sans-serif", color: "#111111" }}>
-                  Pictures should be 800x600 centre frame image.
-                </span>
-              </li>
-            </ul>
-          </section>
-        )}
-
-        {currentStep === 3 && (
-          <section className="mb-10">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="h-12 w-1 shrink-0" style={{ backgroundColor: "#DC3729" }} />
-              <h2
-                className="uppercase"
-                style={{
-                  fontFamily: "'Chakra Petch', sans-serif",
-                  fontWeight: 600,
-                  fontSize: "18px",
-                  lineHeight: "28px",
-                  letterSpacing: "0.14em",
-                  color: "#111111",
-                }}
-              >
-                COMMENTS
-              </h2>
-            </div>
-            <SubmitStepTextArea
-              name="comments"
-              label="Comments"
-              placeholder={COMMENT_PLACEHOLDER}
-              maxLength={1000}
-            />
-            <div className="mb-6 mt-10 flex items-center gap-3">
-              <div className="h-12 w-1 shrink-0" style={{ backgroundColor: "#DC3729" }} />
-              <h2
-                className="uppercase"
-                style={{
-                  fontFamily: "'Chakra Petch', sans-serif",
-                  fontWeight: 600,
-                  fontSize: "18px",
-                  lineHeight: "28px",
-                  letterSpacing: "0.14em",
-                  color: "#111111",
-                }}
-              >
-                DISCLAIMER
-              </h2>
-            </div>
-            <SubmitStepTextArea
-              name="disclaimer"
-              label="Disclaimer"
-              placeholder={COMMENT_PLACEHOLDER}
-              maxLength={1000}
-            />
+            <h2
+              className="mb-4 uppercase"
+              style={{
+                fontFamily: "'Chakra Petch', sans-serif",
+                fontWeight: 600,
+                fontSize: "18px",
+                lineHeight: "28px",
+                letterSpacing: "0.14em",
+                color: "#111111",
+              }}
+            >
+              Ready to Submit
+            </h2>
+            <p className="text-sm text-gray-500 max-w-sm mx-auto">
+              Please review all steps before submitting your inspection report.
+            </p>
           </section>
         )}
 
@@ -550,7 +557,7 @@ const AddNewCar = () => {
           {currentStep === 0 && (
             <button
               type="button"
-              onClick={() => setCurrentStep(1)}
+              onClick={handleNextStep}
               className="w-full py-3 text-base font-semibold text-white uppercase"
               style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
             >
@@ -574,7 +581,7 @@ const AddNewCar = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setCurrentStep(2)}
+                onClick={handleNextStep}
                 className="flex-1 py-3 text-base font-semibold text-white uppercase"
                 style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
               >
@@ -583,39 +590,15 @@ const AddNewCar = () => {
             </div>
           )}
           {currentStep === 2 && (
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className="flex-1 py-3 text-base font-semibold uppercase"
-                style={{
-                  backgroundColor: "white",
-                  border: "1px solid #D1D5DB",
-                  color: "#374151",
-                  borderRadius: "0",
-                }}
-              >
-                BACK
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(3)}
-                className="flex-1 py-3 text-base font-semibold text-white uppercase"
-                style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
-              >
-                SAVE & CONTINUE
-              </button>
-            </div>
-          )}
-          {currentStep === 3 && (
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() => setIsSubmitSuccessOpen(true)}
-                className="px-12 py-3 text-base font-semibold uppercase text-white"
+                onClick={handleSubmit}
+                disabled={mutation.isPending}
+                className="px-12 py-3 text-base font-semibold uppercase text-white disabled:opacity-50"
                 style={{ backgroundColor: "#DC3729", borderRadius: "0" }}
               >
-                SUBMIT
+                {mutation.isPending ? "SUBMITTING..." : "SUBMIT"}
               </button>
             </div>
           )}
@@ -625,6 +608,7 @@ const AddNewCar = () => {
       <AddIssueModal
         isOpen={isAddIssueOpen}
         onClose={() => setIsAddIssueOpen(false)}
+        onAdd={handleAddIssue}
       />
       <MarkAreaModal
         isOpen={isMarkAreaOpen}
