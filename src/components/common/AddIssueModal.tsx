@@ -9,7 +9,16 @@ interface AddIssueModalProps {
 }
 
 const MB = 5 * 1024 * 1024;
-const emptyOpts: { value: string; label: string }[] = [];
+const exteriorIssueOptions = [
+  { value: "PAINT MARKED", label: "PAINT MARKED" },
+  { value: "DENT", label: "DENT" },
+  { value: "BIG SCRATCH", label: "BIG SCRATCH" },
+  { value: "SMALL DENT", label: "SMALL DENT" },
+  { value: "SMALL SCRATCH", label: "SMALL SCRATCH" },
+  { value: "DENT WITH SCRATCH", label: "DENT WITH SCRATCH (SIZE LIKE FLAT OF THE HAND)" },
+  { value: "SCRATCH", label: "SCRATCH" },
+  { value: "SMALL DENT WITH SCRATCH", label: "SMALL DENT WITH SCRATCH (SIZE LIKE A THUMB)" },
+];
 
 const AddIssueModal = ({ isOpen, onClose, onAdd }: AddIssueModalProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -227,10 +236,10 @@ const AddIssueModal = ({ isOpen, onClose, onAdd }: AddIssueModalProps) => {
             label="Select Issue"
             required
             placeholder="SELECT ISSUE"
-            options={emptyOpts}
+            options={exteriorIssueOptions}
             name="selectIssue"
             value={issue}
-            onChange={(e) => setIssue(e.target.value)}
+            onChange={(e: any) => setIssue(e.target.value)}
           />
         </div>
 

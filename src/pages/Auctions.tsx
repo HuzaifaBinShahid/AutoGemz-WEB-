@@ -1,103 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import Filter from "../components/svgs/auctions/Filter";
 import DataTable from "../components/common/DataTable";
-
-interface Auction {
-  id: number;
-  car: {
-    image: string;
-    model: string;
-    year: number;
-  };
-  seller: string;
-  createdAt: string;
-  status: "LIVE" | "PENDING REVIEW" | "SCHEDULED" | "COMPLETED" | "CANCELLED";
-  highestBid: string | null;
-  endsIn: string | null;
-}
+import { auctionService } from "../services/auctionService";
+import type { Auction } from "../services/auctionService";
 
 const Auctions = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  const auctions: Auction[] = [
-    {
-      id: 1,
-      car: {
-        image:
-          "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=100",
-        model: "Corolla Altis",
-        year: 2018,
-      },
-      seller: "@zainauto",
-      createdAt: "2025-11-23 10:21 PM",
-      status: "LIVE",
-      highestBid: "PKR 2,850,000",
-      endsIn: "01h 12m",
-    },
-    {
-      id: 2,
-      car: {
-        image:
-          "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=100",
-        model: "Honda City",
-        year: 2020,
-      },
-      seller: "@abidcars",
-      createdAt: "2025-11-23 06:08 PM",
-      status: "PENDING REVIEW",
-      highestBid: null,
-      endsIn: null,
-    },
-    {
-      id: 3,
-      car: {
-        image:
-          "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=100",
-        model: "Prius S",
-        year: 2017,
-      },
-      seller: "@hybridking",
-      createdAt: "2025-11-23 10:21 PM",
-      status: "SCHEDULED",
-      highestBid: null,
-      endsIn: "Starts in 03h",
-    },
-    {
-      id: 4,
-      car: {
-        image:
-          "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=100",
-        model: "Sportage AWD",
-        year: 2021,
-      },
-      seller: "@eagleautos",
-      createdAt: "2025-11-23 10:21 PM",
-      status: "COMPLETED",
-      highestBid: "PKR 1,830,000",
-      endsIn: "Ended",
-    },
-    {
-      id: 5,
-      car: {
-        image:
-          "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=100",
-        model: "Civic Oriel",
-        year: 2019,
-      },
-      seller: "@primecars",
-      createdAt: "2025-11-23 10:21 PM",
-      status: "CANCELLED",
-      highestBid: null,
-      endsIn: null,
-    },
-  ];
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['auctions', 1, 10],
+    queryFn: () => auctionService.getAuctions({ page: 1, limit: 10, isActive: true }),
+  });
 
-  const getStatusColor = (status: Auction["status"]) => {
-    switch (status) {
+  useEffect(() => {
+    if (isError) {
+      toast.error((error as any)?.response?.data?.message || "Error loading auctions");
+    }
+  }, [isError, error]);
+
+  const auctions = data?.results || [];
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
       case "LIVE":
+      case "ACTIVE":
         return "#29DC9780";
+      case "PENDING":
       case "PENDING REVIEW":
         return "#F59E0B";
       case "SCHEDULED":
@@ -109,6 +41,19 @@ const Auctions = () => {
       default:
         return "#6B7280";
     }
+  };
+
+  const calculateEndsIn = (endTime: string) => {
+    if (!endTime) return "—";
+    const end = new Date(endTime);
+    const now = new Date();
+    const diff = end.getTime() - now.getTime();
+    
+    if (diff <= 0) return "Ended";
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
   };
 
   return (
@@ -141,70 +86,90 @@ const Auctions = () => {
 
         <div className="mb-4 border-b border-[#1F29371A]" />
 
-        <DataTable
-          columns={[
-            {
-              key: "car",
-              label: "CAR",
-              render: (value: Auction["car"]) => (
-                <div className="flex items-center gap-3">
-                  <img
-                    src={value.image}
-                    alt={value.model}
-                    className="w-12 h-12 object-cover"
-                  />
+        {isLoading ? (
+          <div className="space-y-4 py-8">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 w-full animate-pulse bg-gray-50 flex items-center px-4 gap-4">
+                <div className="w-12 h-12 bg-gray-200" />
+                <div className="flex-1 h-4 bg-gray-200" />
+                <div className="w-24 h-4 bg-gray-200" />
+              </div>
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="py-20 text-center">
+            <p className="text-red-500 font-medium">Failed to load auctions. Please try again.</p>
+          </div>
+        ) : auctions.length === 0 ? (
+          <div className="py-20 text-center">
+            <p className="text-gray-400 text-xl font-medium">No auctions found</p>
+          </div>
+        ) : (
+          <DataTable
+            columns={[
+              {
+                key: "title",
+                label: "AUCTION",
+                render: (value: string, row: Auction) => (
                   <div>
-                    <p className="font-medium text-gray-900">{value.model}</p>
-                    <p className="text-sm text-gray-500">{value.year}</p>
+                    <p className="font-medium text-gray-900">{value}</p>
+                    <p className="text-sm text-gray-500">{row.description}</p>
                   </div>
-                </div>
-              ),
-            },
-            {
-              key: "seller",
-              label: "SELLER",
-              render: (value: string) => (
-                <span className="text-black">{value}</span>
-              ),
-            },
-            {
-              key: "createdAt",
-              label: "CREATED AT",
-            },
-            {
-              key: "status",
-              label: "STATUS",
-              render: (value: Auction["status"]) => (
-                <span
-                  className="inline-block px-3 py-1 rounded-full text-sm font-medium text-black"
-                  style={{ backgroundColor: getStatusColor(value) }}
-                >
-                  {value}
-                </span>
-              ),
-            },
-            {
-              key: "highestBid",
-              label: "HIGHEST BID",
-              render: (value: string | null) => (
-                <span className="text-gray-900 font-medium">
-                  {value || "—"}
-                </span>
-              ),
-            },
-            {
-              key: "endsIn",
-              label: "ENDS IN",
-              render: (value: string | null) => (
-                <span className="text-[#1F2937] font-normal">
-                  {value || "—"}
-                </span>
-              ),
-            },
-          ]}
-          data={auctions}
-          onRowClick={(row) => navigate(`/auctions/${row.id}`)}
-        />
+                ),
+              },
+              {
+                key: "vehicles",
+                label: "MINIMUM BID",
+                render: (vehicles: Auction["vehicles"]) => (
+                  <span className="text-black">
+                    {vehicles?.[0]?.minimumBidAmount ? `AED ${vehicles[0].minimumBidAmount.toLocaleString()}` : "N/A"}
+                  </span>
+                ),
+              },
+              {
+                key: "startDate",
+                label: "START DATE",
+                render: (value: string) => (
+                  <span className="text-gray-700">
+                    {new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                ),
+              },
+              {
+                key: "status",
+                label: "STATUS",
+                render: (value: string) => (
+                  <span
+                    className="inline-block px-3 py-1 text-sm font-medium text-black uppercase"
+                    style={{ backgroundColor: getStatusColor(value), borderRadius: "20px" }}
+                  >
+                    {value || "PENDING"}
+                  </span>
+                ),
+              },
+              {
+                key: "vehicles",
+                label: "BID INCREMENT",
+                render: (vehicles: Auction["vehicles"]) => (
+                  <span className="text-gray-900 font-medium">
+                    {vehicles?.[0]?.bidIncrement ? `AED ${vehicles[0].bidIncrement.toLocaleString()}` : "—"}
+                  </span>
+                ),
+              },
+              {
+                key: "endDate",
+                label: "ENDS IN",
+                render: (value: string) => (
+                  <span className="text-[#1F2937] font-normal">
+                    {calculateEndsIn(value)}
+                  </span>
+                ),
+              },
+            ]}
+            data={auctions}
+            onRowClick={(row) => navigate(`/auctions/${row.id}`)}
+          />
+        )}
       </div>
     </div>
   );

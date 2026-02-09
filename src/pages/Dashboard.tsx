@@ -8,10 +8,17 @@ import { ShareIcon } from "../components/svgs/dashboard/ShareIcon";
 import ThreeDotsIcon from "../components/svgs/dashboard/ThreeDotsIcon";
 import MonthlyAuctionsChart from "../components/Dashboard/MonthlyAuctionsChart";
 import MonthlyInspectionRevenueChart from "../components/Dashboard/MonthlyInspectionRevenueChart";
-import PlatformActivityTable from "../components/Dashboard/PlatformActivityTable";
 import AuctionsByCategoryChart from "../components/Dashboard/AuctionsByCategoryChart";
+import CurrentAuctionsTable from "../components/Dashboard/CurrentAuctionsTable";
+import { useQuery } from "@tanstack/react-query";
+import { auctionService } from "../services/auctionService";
 
 const Dashboard = () => {
+  const { data: auctionData } = useQuery({
+    queryKey: ['dashboard-metrics-auctions'],
+    queryFn: () => auctionService.getAuctions({ isActive: true, limit: 1 }),
+  });
+
   return (
     <div
       className="p-6 bg-[#F2F2F2]"
@@ -48,7 +55,7 @@ const Dashboard = () => {
         />
         <MetricCard
           title="Active Auctions"
-          value="$34,545"
+          value={auctionData?.totalResults?.toString() || "0"}
           subtitle="Live now"
           icon={<CardIcon />}
         />
@@ -160,7 +167,7 @@ const Dashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <PlatformActivityTable />
+        <CurrentAuctionsTable />
         <AuctionsByCategoryChart />
       </div>
     </div>

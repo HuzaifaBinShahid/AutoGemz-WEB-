@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* React Toastify Styles */
+@import 'react-toastify/dist/ReactToastify.css';
+
+/* Hide scrollbar globally */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+@layer base {
+  * {
+    @apply border-neutral-200 dark:border-neutral-800;
+  }
+  
+  html {
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
+    /* Hide scrollbar for IE and Edge */
+    -ms-overflow-style: none;
+  }
+  
+  html::-webkit-scrollbar {
+    /* Hide scrollbar for Chrome, Safari, Opera */
+    display: none;
+  }
+  
+  body {
+    @apply bg-[#f4f4f4] dark:bg-black text-neutral-900 dark:text-neutral-100;
+    font-family: var(--font-mulish), "Mulish", sans-serif;
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
+    /* Hide scrollbar for IE and Edge */
+    -ms-overflow-style: none;
+  }
+  
+  body::-webkit-scrollbar {
+    /* Hide scrollbar for Chrome, Safari, Opera */
+    display: none;
+  }
+  
+  input {
+    font-family: var(--font-mulish), "Mulish", sans-serif !important;
+  }
+  
+  input::placeholder {
+    font-family: var(--font-mulish), "Mulish", sans-serif !important;
+  }
+  
+  .font-mulish {
+    font-family: var(--font-mulish), "Mulish", sans-serif !important;
+  }
+  
+  .font-display {
+    font-family: var(--font-chakra), "Chakra Petch", sans-serif !important;
+  }
+
+  /* Hide default date picker icon */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(
+      to right,
+      #f0f0f0 0%,
+      #e0e0e0 20%,
+      #f0f0f0 40%,
+      #f0f0f0 100%
+    );
+    background-size: 1000px 100%;
+  }
+  
+  .dark .animate-shimmer {
+    background: linear-gradient(
+      to right,
+      #1a1a1a 0%,
+      #2a2a2a 20%,
+      #1a1a1a 40%,
+      #1a1a1a 100%
+    );
+    background-size: 1000px 100%;
+  }
+
+  .header-card-bg {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #F4F4F4 100%);
+  }
+
+  @media (max-width: 767px) {
+    .header-card-bg {
+      background: #FFFFFF;
+    }
+  }
+
+  .dark .header-card-bg {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 10%, #000000 100%);
+  }
+
+  @media (max-width: 767px) {
+    .dark .header-card-bg {
+      background: #FFFFFF;
+    }
+  }
+  @media (max-width: 767px) {
+    .dark .header-card-bg {
+      background: #000000;
+    }
+  }
+
+  /* Custom Range Slider Styles */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #DC3729;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #DC3729;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  input[type="range"]::-webkit-slider-track {
+    background: transparent;
+    height: 2px;
+  }
+
+  input[type="range"]::-moz-range-track {
+    background: transparent;
+    height: 2px;
+  }
+
+  .bid-countdown-border {
+    border: 3px solid;
+    border-image-source: linear-gradient(221.12deg, rgba(0, 0, 0, 0.6) 3%, rgba(255, 255, 255, 0.18) 27%, rgba(255, 255, 255, 0.18) 74%, rgba(0, 0, 0, 0.6) 90.59%, rgba(0, 0, 0, 0.4) 100%);
+    border-image-slice: 1;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+

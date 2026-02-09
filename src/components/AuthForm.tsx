@@ -3,19 +3,24 @@ import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import CommonInput from './common/CommonInput';
 import CommonButton from './common/CommonButton';
+import CommonSelect from './common/CommonSelect';
 
 interface AuthFormProps {
   type: 'login' | 'register' | 'forgot-password';
   onSubmit: (values: any) => void;
+  error?: string | null;
 }
 
-const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
+const AuthForm = ({ type, onSubmit, error }: AuthFormProps) => {
   const getValidationSchema = () => {
     switch (type) {
       case 'login':
         return z.object({
           email: z.string().email('Invalid email address'),
           password: z.string().min(6, 'Password must be at least 6 characters'),
+          role: z.enum(['inspector', 'admin'], {
+            required_error: 'Please select a role',
+          }),
         });
       case 'register':
         return z.object({
@@ -35,7 +40,7 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
   const getInitialValues = () => {
     switch (type) {
       case 'login':
-        return { email: '', password: '' };
+        return { email: '', password: '', role: '' };
       case 'register':
         return { name: '', email: '', password: '' };
       case 'forgot-password':
@@ -99,7 +104,7 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
 
         <Formik
           initialValues={getInitialValues()}
-          validate={type === 'login' ? undefined : validate}
+          validate={validate}
           onSubmit={onSubmit}
         >
           {({ isSubmitting }) => (
@@ -127,6 +132,23 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
               )}
 
               {type === 'login' && (
+                <CommonSelect
+                  name="role"
+                  label="SELECT ROLE"
+                  options={[
+                    { value: 'inspector', label: 'Inspector' },
+                    { value: 'admin', label: 'Admin' },
+                  ]}
+                />
+              )}
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
+
+              {type === 'login' && (
                 <div className="flex justify-end">
                   <Link
                     to="/forgot-password"
@@ -138,12 +160,12 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
                 </div>
               )}
 
-              <CommonButton type="submit" disabled={isSubmitting}>
+              <CommonButton type="submit" isLoading={isSubmitting}>
                 {type === 'forgot-password' ? 'SEND RESET LINK' : getTitle()}
               </CommonButton>
 
               <div className="text-center text-sm text-gray-600">
-                {type === 'login' && (
+                {/* {type === 'login' && (
                   <>
                     Not registered yet?{' '}
                     <Link
@@ -154,7 +176,7 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
                       Create an Account
                     </Link>
                   </>
-                )}
+                )} */}
                 {type === 'register' && (
                   <>
                     Already have an account?{' '}
@@ -167,7 +189,7 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
                     </Link>
                   </>
                 )}
-                {type === 'forgot-password' && (
+                {/* {type === 'forgot-password' && (
                   <>
                     Don't have an account yet?{' '}
                     <Link
@@ -178,7 +200,7 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
                       Register
                     </Link>
                   </>
-                )}
+                )} */}
               </div>
             </Form>
           )}

@@ -1,88 +1,51 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import DataTable from "../components/common/DataTable";
-
-interface InspectionItem {
-  id: number;
-  car: {
-    image: string;
-    model: string;
-    year: number;
-  };
-  inspectionId: string;
-  location: string;
-  inspector: string;
-  status: "PENDING" | "PASSED" | "FAILED";
-  completedOn: string | null;
-}
+import { inspectionService } from "../services/inspectionService";
 
 const InspectorInspectionList = () => {
   const [activeTab, setActiveTab] = useState<"all" | "mylist">("all");
   const navigate = useNavigate();
 
-  const inspections: InspectionItem[] = [
-    {
-      id: 1,
-      car: {
-        image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400",
-        model: "Corolla Altis",
-        year: 2018,
-      },
-      inspectionId: "INSP 10457",
-      location: "Lahore",
-      inspector: "Ahmed Raza",
-      status: "PENDING",
-      completedOn: null,
-    },
-    {
-      id: 2,
-      car: {
-        image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400",
-        model: "Civic Oriel",
-        year: 2020,
-      },
-      inspectionId: "INSP 10423",
-      location: "Karachi",
-      inspector: "Sana Qureshi",
-      status: "PASSED",
-      completedOn: "30 Apr 2025",
-    },
-    {
-      id: 3,
-      car: {
-        image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400",
-        model: "Sportage AWD",
-        year: 2025,
-      },
-      inspectionId: "INSP 10389",
-      location: "Islamabad",
-      inspector: "Bilal Khan",
-      status: "FAILED",
-      completedOn: null,
-    },
-  ];
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['inspector-inspections', activeTab],
+    queryFn: () => inspectionService.getInspectorVehicles({ 
+      page: 1, 
+      limit: 10,
+      sortBy: 'createdAt:desc'
+    }),
+  });
 
-  const statusColors: Record<InspectionItem["status"], string> = {
+  const inspections = data?.results || [];
+
+  const statusColors: Record<string, string> = {
     PENDING: "#F59E0B",
     PASSED: "#3EB549",
     FAILED: "#DC3729",
+    COMPLETED: "#3EB549",
+    APPROVED: "#3EB549",
+    ACTIVE: "#3EB549",
+    "IN PROGRESS": "#3B82F6",
+    REQUEST: "#F59E0B",
+    INSPECTED: "#3EB549",
   };
 
   const columns = [
     {
       key: "car",
       label: "CAR",
-      render: (value: InspectionItem["car"]) => (
+      render: (_: any, row: any) => (
         <div className="flex items-center gap-3">
           <img
-            src={value.image}
-            alt={value.model}
+            src={row.images?.[0] || "https://placehold.co/600x400?text=No+Image"}
+            alt={row.model}
             className="w-12 h-12 object-cover"
             style={{ borderRadius: "0" }}
           />
           <div>
-            <p className="font-medium text-gray-900">{value.model}</p>
-            <p className="text-sm text-gray-500">{value.year}</p>
+            <p className="font-medium text-gray-900">{row.make} {row.model}</p>
+            <p className="text-sm text-gray-500">{row.year}</p>
           </div>
         </div>
       ),
@@ -90,35 +53,40 @@ const InspectorInspectionList = () => {
     {
       key: "inspectionId",
       label: "INSPECTION ID",
-      render: (value: string) => <span className="text-gray-900">{value}</span>,
+      render: (value: string) => <span className="text-gray-900">{value || "N/A"}</span>,
     },
     {
       key: "location",
       label: "LOCATION",
-      render: (value: string) => <span className="text-gray-900">{value}</span>,
+      render: (_: any, row: any) => <span className="text-gray-900">{row.city || row.location || "N/A"}</span>,
     },
     {
-      key: "inspector",
+      key: "inspectorName",
       label: "INSPECTOR",
-      render: (value: string) => <span className="text-gray-900">{value}</span>,
+      render: (value: string) => <span className="text-gray-900">{value || "N/A"}</span>,
     },
     {
       key: "status",
       label: "STATUS",
-      render: (value: InspectionItem["status"]) => (
-        <span
-          className="inline-block px-3 py-1 text-sm font-medium text-white"
-          style={{ backgroundColor: statusColors[value], borderRadius: "0" }}
-        >
-          {value}
-        </span>
-      ),
+      render: (_: string, row: any) => {
+        const status = row.vehicleStatus || row.status || row.adStatus || "PENDING";
+        return (
+          <span
+            className="inline-block px-3 py-1 text-sm font-medium text-white uppercase"
+            style={{ backgroundColor: statusColors[status?.toUpperCase()] || "#9CA3AF", borderRadius: "0" }}
+          >
+            {status}
+          </span>
+        );
+      },
     },
     {
       key: "completedOn",
       label: "COMPLETED ON",
       render: (value: string | null) => (
-        <span className="text-gray-700">{value || "—"}</span>
+        <span className="text-gray-700">
+          {value ? new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "—"}
+        </span>
       ),
     },
   ];
@@ -172,11 +140,31 @@ const InspectorInspectionList = () => {
 
         <div className="mb-4 border-b border-[#1F29371A]" />
 
-        <DataTable
-          columns={columns}
-          data={inspections}
-          onRowClick={(row) => navigate(`/inspector/${row.id}`)}
-        />
+        {isLoading ? (
+          <div className="space-y-4 py-8">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 w-full animate-pulse bg-gray-50 flex items-center px-4 gap-4">
+                <div className="w-12 h-12 bg-gray-200" />
+                <div className="flex-1 h-4 bg-gray-200" />
+                <div className="w-24 h-4 bg-gray-200" />
+              </div>
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="py-20 text-center">
+            <p className="text-red-500 font-medium">Failed to load inspections. Please try again.</p>
+          </div>
+        ) : inspections.length === 0 ? (
+          <div className="py-20 text-center">
+            <p className="text-gray-400 text-xl font-medium">No inspection reports found</p>
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={inspections}
+            onRowClick={(row) => navigate(`/inspector/${row.id}`)}
+          />
+        )}
       </div>
     </div>
   );
