@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { User } from "@/interfaces";
 import api from "@/lib/api";
 import { setCredentials } from "../slices/authSlice";
+import { ApiEndpoints } from "@/enums/endpoints";
 
 // Login thunk
 export const loginUser = createAsyncThunk<
@@ -12,10 +13,10 @@ export const loginUser = createAsyncThunk<
   "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await api.post("/auth/login", { ...credentials, role: "user" });
+      const response = await api.post(ApiEndpoints.AUTH_LOGIN, { ...credentials  });
       const { user, token } = response.data;
       localStorage.setItem("token", token?.access?.token);
-      return { user, token: token?.access?.token, refresh_token: token?.access?.refresh_token  };
+      return { user, token: token?.access?.token, refresh_token: token?.refresh?.token  };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Login failed"
@@ -33,7 +34,7 @@ export const registerUser = createAsyncThunk<
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await api.post("/auth/register", userData);
+      const response = await api.post(ApiEndpoints.AUTH_REGISTER, userData);
       const { user, token } = response.data;
 
       // Store token in localStorage
@@ -55,7 +56,7 @@ export const logoutUser = createAsyncThunk<void, void>(
   "auth/logout",
   async () => {
     try {
-      await api.post("/auth/logout");
+      await api.post(ApiEndpoints.AUTH_LOGOUT);
     } catch (error) {
       // Continue with logout even if API call fails
       console.error("Logout API call failed:", error);
@@ -77,7 +78,7 @@ export const fetchCurrentUser = createAsyncThunk<
   "auth/fetchCurrentUser",
   async (_, { rejectWithValue, dispatch }) => {
     try {
-      const response = await api.get("/auth/me");
+      const response = await api.get(ApiEndpoints.AUTH_ME);
       const user = response.data;
 
       // Get token from localStorage
@@ -115,7 +116,7 @@ export const updateUserProfile = createAsyncThunk<
   "auth/updateProfile",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await api.patch("/auth/profile", userData);
+      const response = await api.patch(ApiEndpoints.AUTH_PROFILE, userData);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
@@ -134,7 +135,7 @@ export const fetchUserProfile = createAsyncThunk<
   "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/users/profile");
+      const response = await api.get(ApiEndpoints.USERS_PROFILE);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
@@ -153,11 +154,12 @@ export const updateUserProfileSettings = createAsyncThunk<
   "auth/updateUserProfileSettings",
   async (profileData, { rejectWithValue }) => {
     try {
-      // Backend allows only "avatar", not "profilePicture" — omit profilePicture
-      const { profilePicture: _omit, ...rest } = profileData || {};
-      const processedData: any = { ...rest };
-
-      const response = await api.patch("/users/profile", processedData);
+      // If profileData contains File objects, convert them to base64
+      const processedData: any = { ...profileData };
+      
+      // Handle avatar/profilePicture if it's a base64 string (already converted)
+      // or if it needs to be sent as-is
+      const response = await api.patch(ApiEndpoints.USERS_PROFILE, processedData);
       
       // Return the updated profile data
       return response.data?.data || response.data;
@@ -178,7 +180,7 @@ export const forgotPassword = createAsyncThunk<
   "auth/forgotPassword",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.post("/auth/forgot-password", {
+      const response = await api.post(ApiEndpoints.AUTH_FORGOT_PASSWORD, {
         email: data.email,
       });
       return response.data;

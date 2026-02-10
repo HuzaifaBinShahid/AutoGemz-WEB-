@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 import type { AuthState, User } from "@/interfaces";
 import {
   loginUser,
@@ -44,7 +45,7 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     // Login
     builder
-      .addCase(loginUser.pending, (state) => {
+      .addCase(loginUser.pending, () => {
         // Handle loading state if needed
       })
       .addCase(loginUser.fulfilled, (state, action) => {
@@ -53,13 +54,13 @@ const authSlice = createSlice({
         state.refresh_token = action.payload.refresh_token;
         state.isAuthenticated = true;
       })
-      .addCase(loginUser.rejected, (state) => {
+      .addCase(loginUser.rejected, () => {
         // Handle error state if needed
       });
 
     // Register
     builder
-      .addCase(registerUser.pending, (state) => {
+      .addCase(registerUser.pending, () => {
         // Handle loading state if needed
       })
       .addCase(registerUser.fulfilled, (state, action) => {
@@ -67,7 +68,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.isAuthenticated = true;
       })
-      .addCase(registerUser.rejected, (state) => {
+      .addCase(registerUser.rejected, () => {
         // Handle error state if needed
       });
 
@@ -80,7 +81,7 @@ const authSlice = createSlice({
 
     // Fetch current user
     builder
-      .addCase(fetchCurrentUser.pending, (state) => {
+      .addCase(fetchCurrentUser.pending, () => {
         // Handle loading state if needed
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
@@ -95,19 +96,19 @@ const authSlice = createSlice({
 
     // Update user profile
     builder
-      .addCase(updateUserProfile.pending, (state) => {
+      .addCase(updateUserProfile.pending, () => {
         // Handle loading state if needed
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.user = action.payload;
       })
-      .addCase(updateUserProfile.rejected, (state) => {
+      .addCase(updateUserProfile.rejected, () => {
         // Handle error state if needed
       });
 
     // Fetch user profile settings
     builder
-      .addCase(fetchUserProfile.pending, (state) => {
+      .addCase(fetchUserProfile.pending, () => {
         // Handle loading state if needed
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
@@ -116,13 +117,13 @@ const authSlice = createSlice({
           state.user = { ...state.user, ...action.payload };
         }
       })
-      .addCase(fetchUserProfile.rejected, (state) => {
+      .addCase(fetchUserProfile.rejected, () => {
         // Handle error state if needed
       });
 
     // Update user profile settings
     builder
-      .addCase(updateUserProfileSettings.pending, (state) => {
+      .addCase(updateUserProfileSettings.pending, () => {
         // Handle loading state if needed
       })
       .addCase(updateUserProfileSettings.fulfilled, (state, action) => {
@@ -131,7 +132,7 @@ const authSlice = createSlice({
           state.user = { ...state.user, ...action.payload };
         }
       })
-      .addCase(updateUserProfileSettings.rejected, (state) => {
+      .addCase(updateUserProfileSettings.rejected, () => {
         // Handle error state if needed
       });
   },

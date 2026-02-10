@@ -1,31 +1,34 @@
-import AutoGemzLogo from './svgs/AutoGemzLogo';
-
 const AutoGemzLeftSide = () => {
   const features = [
-    'Light/dark mode toggle',
-    'Redux toolkit and other utility libraries configured',
-    'Calendar, Modal, Sidebar components',
-    'User-friendly documentation',
-    'Daisy UI components, Tailwind CSS support',
+    "Light/dark mode toggle",
+    "Redux toolkit and other utility libraries configured",
+    "Calendar, Modal, Sidebar components",
+    "User-friendly documentation",
+    "Daisy UI components, Tailwind CSS support",
   ];
 
   return (
-    <div 
+    <div
       className="flex-1 relative overflow-hidden"
       style={{
-        backgroundColor: '#0000008C',
-        borderRadius: '5px',
-        boxShadow: '0px 9.11px 11.38px -6.83px #0000001A, 0px 22.76px 28.46px -5.69px #0000001A',
-        backdropFilter: 'blur(10px)',
+        backgroundColor: "#0000008C",
+        borderRadius: "5px",
+        boxShadow:
+          "0px 9.11px 11.38px -6.83px #0000001A, 0px 22.76px 28.46px -5.69px #0000001A",
+        backdropFilter: "blur(10px)",
       }}
     >
       <div className="relative z-10 flex flex-col justify-center items-start h-full p-12 text-white">
         <div className="mb-8">
-          <AutoGemzLogo />
+          <img
+            src="/assets/Logo/Icon Png.png"
+            alt="AutoGemz"
+            className="h-16 w-auto object-contain"
+          />
         </div>
-        
+
         <h1 className="text-4xl font-bold mb-6">Admin Dashboard</h1>
-        
+
         <ul className="space-y-4">
           {features.map((feature, index) => (
             <li key={index} className="flex items-center gap-3">

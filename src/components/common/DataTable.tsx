@@ -51,26 +51,23 @@ const DataTable = ({
               {columns.map((column) => {
                 if (column.render) {
                   return (
-                    <td key={column.key} className="py-4 px-4">
+                    <td key={column.key} className="py-4 px-4 text-gray-900">
                       {column.render(row[column.key], row)}
                     </td>
                   );
                 }
 
-                if (
-                  imageKey &&
-                  column.key === imageKey &&
-                  row[imageKey]
-                ) {
-                  const imageUrl = typeof row[imageKey] === "string" 
-                    ? row[imageKey] 
-                    : row[imageKey]?.image || row[imageKey]?.url;
-                  const altText = imageAltKey 
-                    ? row[imageAltKey] 
+                if (imageKey && column.key === imageKey && row[imageKey]) {
+                  const imageUrl =
+                    typeof row[imageKey] === "string"
+                      ? row[imageKey]
+                      : row[imageKey]?.image || row[imageKey]?.url;
+                  const altText = imageAltKey
+                    ? row[imageAltKey]
                     : row[column.key]?.alt || row.name || row.model || "";
 
                   return (
-                    <td key={column.key} className="py-4 px-4">
+                    <td key={column.key} className="py-4 px-4 text-black!">
                       <div className="flex items-center gap-3">
                         <img
                           src={imageUrl}
@@ -81,10 +78,14 @@ const DataTable = ({
                         />
                         <div>
                           {row.name && (
-                            <p className="font-medium text-gray-900">{row.name}</p>
+                            <p className="font-medium text-gray-900">
+                              {row.name}
+                            </p>
                           )}
                           {row.model && (
-                            <p className="font-medium text-gray-900">{row.model}</p>
+                            <p className="font-medium text-gray-900">
+                              {row.model}
+                            </p>
                           )}
                           {row.year && (
                             <p className="text-sm text-gray-500">{row.year}</p>
@@ -96,7 +97,7 @@ const DataTable = ({
                 }
 
                 return (
-                  <td key={column.key} className="py-4 px-4 text-gray-700">
+                  <td key={column.key} className="py-4 px-4 text-gray-900">
                     {row[column.key] || "—"}
                   </td>
                 );
