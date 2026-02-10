@@ -1,0 +1,9 @@
+{
+  "/sale-car/page": "app/sale-car/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/auctions/[id]/page": "app/auctions/[id]/page.js",
+  "/page": "app/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/my-vehicle/page": "app/dashboard/my-vehicle/page.js",
+  "/dashboard/payments/page": "app/dashboard/payments/page.js"
+}
